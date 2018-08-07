@@ -72,7 +72,14 @@ class JsonapiCompliable::Util::Persistence
       update_foreign_type(attrs, x, null: true) if x[:is_polymorphic]
     else
       attrs[x[:foreign_key]] = parent_object.send(x[:primary_key])
-      update_foreign_type(attrs, x) if x[:is_polymorphic]
+      if x[:is_polymorphic]
+        update_foreign_type(attrs, x)
+      else
+        type_key = x[:foreign_key].to_s.gsub('_id', '_type')
+        if "#{parent_object.class.name.underscore.downcase}_type" != type_key
+          attrs[type_key.to_sym] = parent_object.class.name
+        end
+      end
     end
   end
 
